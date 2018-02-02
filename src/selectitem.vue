@@ -30,7 +30,9 @@
     data () {
       return {
         spin: {start: -9, end: 9, branch: 9},
-        finger: {startY: 0, lastY: 0, startTime: 0, lastTime: 0, transformY: 0}
+        finger: {startY: 0, lastY: 0, startTime: 0, lastTime: 0, transformY: 0},
+        //内部改动值
+        innerVal:''
       }
     },
     props: {
@@ -57,25 +59,47 @@
         return temp
       }
     },
+    watch:{
+        value:function(val){
+            if(this.innerVal === val){
+                return;
+            }
+            clearTimeout(this.valT)
+            this.valT = setTimeout(()=>{
+                this.innitVal(val)
+            },200)
+
+        }
+    },
     mounted () {
       /* 事件绑定 */
       this.$el.addEventListener('touchstart', this.itemTouchStart)
       this.$el.addEventListener('touchmove', this.itemTouchMove)
       this.$el.addEventListener('touchend', this.itemTouchEnd)
       /* 初始化状态 */
-      let index = this.listData.indexOf(this.value)
-      if (index === -1) {
-        console.warn('当前初始值不存在，请检查后listData范围！！')
-        this.setListTransform()
-        this.getPickValue(0)
-      } else {
-        let move = index * 34
-        /* 因为往上滑动所以是负 */
-        this.setStyle(-move)
-        this.setListTransform(-move, -move)
-      }
+      this.innitVal(this.value)
     },
     methods: {
+      /*初始化*/
+      innitVal(value){
+          let index = this.listData.indexOf(value)
+          if (index === -1) {
+              console.warn('当前初始值不存在，请检查后listData范围！！')
+              this.spin = {start: -9, end: 9, branch: 9};
+              this.finger = {startY: 0, lastY: 0, startTime: 0, lastTime: 0, transformY: 0};
+              setTimeout(()=>{
+                  this.setListTransform()
+                  this.getPickValue(0)
+                  this.setStyle(0, 'end')
+                  //this.itemTouchEnd(this.$event)
+              })
+          } else {
+              let move = index * 34
+            /* 因为往上滑动所以是负 */
+              this.setStyle(-move)
+              this.setListTransform(-move, -move)
+          }
+      },
       /* 根据type 控制滚轮显示效果 */
       setHidden (index) {
         if (this.type === 'line') {
@@ -154,7 +178,7 @@
          * 当时间小于300毫秒 最后的移动距离等于 move + 减速运动距离
          * */
         let time = this.finger.lastTime - this.finger.startTime
-        let v = move / time
+        let v = move / time;
         /* 减速加速度a */
         let a = 3
         /* 设置css */
@@ -192,7 +216,7 @@
           this.setListTransform(endMove, margin, type, time)
           this.setWheelDeg(endDeg, type, time)
           /* 设置$emit 延迟 */
-          setTimeout(() => this.getPickValue(endMove), 300)
+          setTimeout(() => this.getPickValue(endMove), 1000)
         } else {
           this.setListTransform(updateMove, margin)
           this.setWheelDeg(updateDeg)
@@ -213,6 +237,8 @@
       getPickValue (move) {
         let index = Math.abs(move / 34)
         let pickValue = this.getSpinData(index)
+        // 内部值  和 外部改动值做区别
+        this.innerVal =  pickValue ;
         this.$emit('input', pickValue)
       }
     },

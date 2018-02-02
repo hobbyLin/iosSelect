@@ -11,10 +11,11 @@
                 <pd-select-box >
                     <pd-select-item :listData="yearList" v-model="year" type="line"></pd-select-item>
                     <pd-select-item :listData="monthList" type="line" v-model="month"></pd-select-item>
-                    <pd-select-item v-if="is31 === 31"  :listData="dateList[3]" type="line" v-model="date"></pd-select-item>
-                    <pd-select-item v-else-if="is31 === 30"  :listData="dateList[2]" type="line" v-model="date"></pd-select-item>
-                    <pd-select-item v-else-if="is31 === 2 && !isLeap"  :listData="dateList[1]" type="line" v-model="date"></pd-select-item>
-                    <pd-select-item v-else  :listData="dateList[0]" type="line" v-model="date"></pd-select-item>
+                    <pd-select-item :listData="currentDateList" type="line" v-model="date"></pd-select-item>
+                    <!--<pd-select-item v-if="is31 === 31"  :listData="dateList[3]" type="line" v-model="date"></pd-select-item>-->
+                    <!--<pd-select-item v-else-if="is31 === 30"  :listData="dateList[2]" type="line" v-model="date"></pd-select-item>-->
+                    <!--<pd-select-item v-else-if="is31 === 2 && !isLeap"  :listData="dateList[1]" type="line" v-model="date"></pd-select-item>-->
+                    <!--<pd-select-item v-else  :listData="dateList[0]" type="line" v-model="date"></pd-select-item>-->
                 </pd-select-box>
             </div>
         </div>
@@ -34,7 +35,7 @@
                 date:'',
                 showAll:false,
                 showPicker:true,
-                defaultDate:''
+                defaultDate:'',
             }
         },
         props: {
@@ -75,11 +76,45 @@
                 }else{
                     return false
                 }
+            },
+            currentDateList:function(){
+                let current;
+                switch (this.is31) {
+                    case 31:
+                        current = this.dateList[3];
+                        break;
+                    case 30:
+                        current = this.dateList[2];
+                        if(current.indexOf(this.date) === -1){
+                            this.date = '30日'
+                        }
+
+                        break;
+                    case 2:
+                        if(this.isLeap){
+                            current = this.dateList[1];
+                            if(current.indexOf(this.date) === -1){
+                                this.date = '29日'
+                            }
+                        }else{
+                            current = this.dateList[0];
+                            if(current.indexOf(this.date) === -1){
+                                this.date = '28日'
+                            }
+                        }
+                        break;
+                    default:
+                        current = this.dateList[3];
+                        break
+
+                }
+                return current;
             }
 
         },
         watch:{
             defaultDate:function(val){
+                console.log(val)
                 let valList = val.split('-');
                 this.year = `${parseInt(valList[0])}年`;
                 this.month = `${parseInt(valList[1])}月`;
@@ -129,7 +164,10 @@
                 this.date = `${date}日`;
             },
             getValue(){
-                return `${this.yearIndex + 1900}-${this.monthIndex + 1}-${this.dateIndex +1}`;
+                return `${this.yearIndex + 1900}-${this.trans(this.monthIndex + 1)}-${this.trans(this.dateIndex +1)}`;
+            },
+            trans(num){
+                return num > 9 ? num : '0'+ num;
             },
             finish(){
                 this.finishCallBack(this.getValue())

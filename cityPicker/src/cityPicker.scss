@@ -1,0 +1,40 @@
+.pickerMask{
+  position: absolute;
+  z-index: 9998;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: table;
+  transition: opacity .3s ease;
+  overflow: hidden;
+  .pickerWrapper{
+    transform: translate(0, 0%);
+    animation:pickerPopup .45s ease;
+    .head{
+      height:.8rem;
+      background-color: #fff;
+      border-radius: 3px;
+      .left,.right{
+        height: 100%;
+        line-height: .8rem;
+        float:right;
+        font-size: .3rem;
+        color:#FF8702;
+        padding-right: .3rem;
+      }
+      .left{
+        float:left;
+        padding-left: .3rem;
+      }
+    }
+  }
+}
+@keyframes pickerPopup {
+  from { transform: scale(1) translate(0, 100%); opacity: .3; }
+
+  to { transform: scale(1) translate(0, 0%); opacity: 1; }
+}
